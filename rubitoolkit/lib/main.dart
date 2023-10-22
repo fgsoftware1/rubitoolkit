@@ -21,11 +21,10 @@ const double windowWidth = 1024;
 const double windowHeight = 800;
 
 void setupWindow() {
-  if (!kIsWeb && (Platform.isWindows || Platform.isLinux)) {
-    WidgetsFlutterBinding.ensureInitialized();
-    setWindowTitle('Rubitoolkit');
-    setWindowMinSize(const Size(windowWidth, windowHeight));
-  }
+  setWindowTitle('Rubitoolkit');
+
+  WidgetsFlutterBinding.ensureInitialized();
+  setWindowMinSize(const Size(windowWidth, windowHeight));
 }
 
 class HomePage extends StatelessWidget {

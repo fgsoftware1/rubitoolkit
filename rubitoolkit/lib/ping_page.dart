@@ -18,7 +18,7 @@ class PingStatePage extends State<PingPage> {
     final host = _hostController.text;
     final results = <String>[];
 
-    _hostPing.text = "Pinging $host";
+    _hostPing.text = "Pinging $host...";
     var result = await Process.run('ping', ['-n', '5', host]);
 
     results.addAll(result.stdout.split('\n'));
