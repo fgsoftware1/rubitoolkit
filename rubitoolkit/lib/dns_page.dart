@@ -13,41 +13,32 @@ class DnsPage extends StatefulWidget {
 }
 
 class DnsPageState extends State<DnsPage> {
-  final TextEditingController queryController = TextEditingController();
+  final _dnsController = TextEditingController();
+  final _queryController = TextEditingController();
   List<String> lookupResults = [];
-  List<String> domainList = [];
 
   Future<void> performDNSLookup() async {
     final dnsolve = DNSolve();
+    final host = _queryController.text;
     final results = <String>[];
 
-    for (final domain in domainList) {
-      final response = await dnsolve.lookup(
-        domain,
-        dnsSec: true,
-        type: RecordType.any,
-      );
+    _dnsController.text = "Quering $host";
+    final response = await dnsolve.lookup(
+      host,
+      dnsSec: true,
+      type: RecordType.any,
+    );
 
-      if (response.answer!.records != null) {
-        for (final record in response.answer!.records!) {
-          log(record.toBind);
-          results.add(record.toBind);
-        }
+    if (response.answer!.records != null) {
+      for (final record in response.answer!.records!) {
+        log(record.toBind);
+        results.add(record.toBind);
       }
     }
 
     setState(() {
       lookupResults = results;
     });
-  }
-
-  void extractDomainsFromText() {
-    final text = queryController.text;
-    final domains = text.split(',');
-    domainList = domains
-        .map((domain) => domain.trim())
-        .where((domain) => domain.isNotEmpty)
-        .toList();
   }
 
   void sortRecordsByType() {
@@ -90,7 +81,7 @@ class DnsPageState extends State<DnsPage> {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
-                    controller: queryController,
+                    controller: _queryController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
                       labelText: 'Enter domain/domains',
@@ -103,7 +94,6 @@ class DnsPageState extends State<DnsPage> {
                 flex: 1,
                 child: IconButton(
                   onPressed: () {
-                    extractDomainsFromText();
                     performDNSLookup();
                     sortRecordsByType();
                   },
@@ -121,36 +111,19 @@ class DnsPageState extends State<DnsPage> {
           ),
           if (lookupResults.isNotEmpty)
             Expanded(
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 256,
-                    child: ListView.builder(
-                      itemCount: domainList.length,
-                      itemBuilder: (context, index) {
-                        return ListTile(
-                          title: Text(domainList[index]),
-                        );
-                      },
-                    ),
-                  ),
-                  const VerticalDivider(),
-                  SizedBox(
-                    width: 768,
-                    child: Expanded(
-                      child: ListView.builder(
-                        itemCount: lookupResults.length,
-                        itemBuilder: (context, index) {
-                          return ListTile(
-                            title: Text(lookupResults[index]),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                ],
+                child: Column(children: [
+              TextField(
+                controller: _dnsController,
               ),
-            ),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: lookupResults.length,
+                  itemBuilder: (context, index) {
+                    return Text(lookupResults[index]);
+                  },
+                ),
+              ),
+            ])),
         ],
       ),
     );
