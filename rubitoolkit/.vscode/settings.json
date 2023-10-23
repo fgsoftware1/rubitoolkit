@@ -1,3 +1,6 @@
 {
-  "cmake.sourceDirectory": "C:/Users/gabri/Desktop/projects/RubiToolkit/rubitoolkit/windows"
+  "cmake.sourceDirectory": "C:/Users/barnulf/Desktop/projects/rubitoolkit/rubitoolkit/windows",
+  "editor.formatOnSave": true,
+  "explorer.compactFolders": false,
+  "cmake.configureOnOpen": true
 }
