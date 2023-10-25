@@ -1,9 +1,5 @@
-import 'dart:developer';
-
 import 'package:dnsolve/dnsolve.dart';
 import 'package:flutter/material.dart';
-
-String selectedSortOption = 'Default';
 
 class DnsPage extends StatefulWidget {
   const DnsPage({super.key});
@@ -22,18 +18,11 @@ class DnsPageState extends State<DnsPage> {
     final host = _queryController.text;
     final results = <String>[];
 
-    _dnsController.text = "Quering $host";
-    final response = await dnsolve.lookup(
-      host,
-      dnsSec: true,
-      type: RecordType.any,
-    );
+    final response =
+        await dnsolve.lookup(host, dnsSec: true, type: RecordType.any);
 
     if (response.answer!.records != null) {
-      for (final record in response.answer!.records!) {
-        log(record.toBind);
-        results.add(record.toBind);
-      }
+      results.addAll(response.answer!.records!.map((record) => record.toBind));
     }
 
     setState(() {
@@ -42,25 +31,21 @@ class DnsPageState extends State<DnsPage> {
   }
 
   void sortRecordsByType() {
-    final Map<String, List<String>> recordGroups = {};
+    final recordGroups = <String, List<String>>{};
+    final sortedRecords = <String>[];
+    const sortedTypes = RecordType.values;
 
     for (final record in lookupResults) {
-      final parts = record.split(' ');
+      final parts = record.split(RegExp(r'^\\s+$'));
       if (parts.length >= 4) {
         final type = parts[3];
-        recordGroups.putIfAbsent(type, () => []);
-        recordGroups[type]!.add(record);
+        recordGroups.putIfAbsent(type, () => []).add(record);
       }
     }
 
-    final sortedRecords = <String>[];
-    final sortedTypes = [RecordType.values];
-
     for (final type in sortedTypes) {
-      final records = recordGroups[type];
-      if (records != null) {
-        records.sort();
-        sortedRecords.addAll(records);
+      if (recordGroups.containsKey(type)) {
+        sortedRecords.addAll(recordGroups[type]!);
       }
     }
 
@@ -84,8 +69,8 @@ class DnsPageState extends State<DnsPage> {
                     controller: _queryController,
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),
-                      labelText: 'Enter domain/domains',
-                      hintText: '"domain.tld", "domain.tld, domain2.tld"',
+                      labelText: 'Enter domain',
+                      hintText: 'domain.tld',
                     ),
                   ),
                 ),
