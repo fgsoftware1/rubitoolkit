@@ -3,4 +3,5 @@
 /build
 /.flutter-plugins
 /.flutter-plugins-dependencies
-/pubspec.lock
+pubspec.lock
+*.log
