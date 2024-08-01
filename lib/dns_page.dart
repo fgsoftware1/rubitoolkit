@@ -88,6 +88,7 @@ class DnsPageState extends State<DnsPage> {
               ),
               Expanded(
                 child: ListView.builder(
+                  padding: const EdgeInsets.only(top: 10, left: 10),
                   itemCount: lookupResults.length,
                   itemBuilder: (context, index) {
                     return Text(lookupResults[index]);

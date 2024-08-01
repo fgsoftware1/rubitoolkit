@@ -74,6 +74,7 @@ class PingStatePage extends State<PingPage> {
                   ),
                   Expanded(
                     child: ListView.builder(
+                      padding: const EdgeInsets.only(top: 10, left: 10),
                       itemCount: pingOutput.length,
                       itemBuilder: (context, index) {
                         return Text(pingOutput[index]);
