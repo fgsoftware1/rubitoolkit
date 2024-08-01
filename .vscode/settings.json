@@ -1,6 +1,5 @@
 {
   "editor.formatOnSave": true,
   "explorer.compactFolders": false,
-  "cmake.configureOnOpen": false,
-  "iis.configDir": "",
+  "cmake.configureOnOpen": false
 }

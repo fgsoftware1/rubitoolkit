@@ -1,4 +1,5 @@
 import 'package:dnsolve/dnsolve.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class DnsPage extends StatefulWidget {
@@ -12,7 +13,6 @@ class DnsPageState extends State<DnsPage> {
   final _dnsController = TextEditingController();
   final _queryController = TextEditingController();
   List<String> lookupResults = [];
-
   Future<void> performDNSLookup() async {
     final dnsolve = DNSolve();
     final host = _queryController.text;
@@ -21,9 +21,20 @@ class DnsPageState extends State<DnsPage> {
     final response =
         await dnsolve.lookup(host, dnsSec: true, type: RecordType.any);
 
-    if (response.answer!.records != null) {
+    if (response.answer != null && response.answer!.records != null) {
       results.addAll(response.answer!.records!.map((record) => record.toBind));
+      if (kDebugMode) {
+        print(results);
+      }
+    } else {
+      print('No records found in the response');
     }
+
+    results.sort((a, b) {
+      final aParts = a.split(RegExp(r'\s+'));
+      final bParts = b.split(RegExp(r'\s+'));
+      return aParts[3].compareTo(bParts[3]);
+    });
 
     setState(() {
       lookupResults = results;
