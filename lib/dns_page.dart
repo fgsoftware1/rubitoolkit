@@ -30,30 +30,6 @@ class DnsPageState extends State<DnsPage> {
     });
   }
 
-  void sortRecordsByType() {
-    final recordGroups = <String, List<String>>{};
-    final sortedRecords = <String>[];
-    const sortedTypes = RecordType.values;
-
-    for (final record in lookupResults) {
-      final parts = record.split(RegExp(r'^\\s+$'));
-      if (parts.length >= 4) {
-        final type = parts[3];
-        recordGroups.putIfAbsent(type, () => []).add(record);
-      }
-    }
-
-    for (final type in sortedTypes) {
-      if (recordGroups.containsKey(type)) {
-        sortedRecords.addAll(recordGroups[type]!);
-      }
-    }
-
-    setState(() {
-      lookupResults = sortedRecords;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,14 +56,13 @@ class DnsPageState extends State<DnsPage> {
                 child: IconButton(
                   onPressed: () {
                     performDNSLookup();
-                    sortRecordsByType();
                   },
                   icon: const Icon(Icons.search),
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                         Colors.red,
                       ),
-                      padding: const MaterialStatePropertyAll(
+                      padding: const WidgetStatePropertyAll(
                         EdgeInsets.all(16.0),
                       )),
                 ),

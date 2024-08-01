@@ -43,6 +43,7 @@ dependencies:
       path: plugins/window_size
   github: ^9.19.0
   http: ^1.1.0
+  network_tools: ^5.0.2
 
 dev_dependencies:
   flutter_test:

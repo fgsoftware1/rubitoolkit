@@ -65,10 +65,10 @@ class WhoisStatePage extends State<WhoisPage> {
                   },
                   icon: const Icon(Icons.search),
                   style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(
+                      backgroundColor: WidgetStateProperty.all(
                         Colors.red,
                       ),
-                      padding: const MaterialStatePropertyAll(
+                      padding: const WidgetStatePropertyAll(
                         EdgeInsets.all(16.0),
                       )),
                 ),
