@@ -1,5 +1,6 @@
 {
   "editor.formatOnSave": true,
   "explorer.compactFolders": false,
-  "cmake.configureOnOpen": false
+  "cmake.configureOnOpen": false,
+  "zencoder.enableRepoIndexing": true
 }

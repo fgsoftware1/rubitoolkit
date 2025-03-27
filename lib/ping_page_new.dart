@@ -1,115 +1,122 @@
 import 'package:flutter/material.dart';
-import 'services/whois_service.dart';
-import 'widgets/whois_form.dart';
-import 'widgets/whois_result_view.dart';
+import 'services/ping_service.dart';
+import 'widgets/ping_form.dart';
+import 'widgets/ping_result_view.dart';
 
-class WhoisPage extends StatefulWidget {
-  const WhoisPage({super.key});
+class PingPage extends StatefulWidget {
+  const PingPage({super.key});
 
   @override
-  WhoisStatePage createState() => WhoisStatePage();
+  PingStatePage createState() => PingStatePage();
 }
 
-class WhoisStatePage extends State<WhoisPage> {
+class PingStatePage extends State<PingPage> {
   // Controllers and services
-  final _domainController = TextEditingController();
-  final _whoisService = WhoisService();
-
+  final _hostController = TextEditingController();
+  final _pingService = PingService();
+  
   // State variables
   bool _isLoading = false;
-  WhoisResult? _whoisResult;
-
-  // History of WHOIS lookup operations
-  final List<Map<String, dynamic>> _lookupHistory = [];
+  PingResult? _pingResult;
+  int _packetCount = 4;
+  
+  // History of ping operations
+  final List<Map<String, dynamic>> _pingHistory = [];
 
   @override
   void dispose() {
-    _domainController.dispose();
+    _hostController.dispose();
     super.dispose();
   }
 
-  /// Perform a WHOIS lookup operation
-  Future<void> _lookup() async {
-    final domain = _domainController.text.trim();
-
-    // Skip if already loading or no domain entered
-    if (_isLoading || domain.isEmpty) return;
+  /// Perform a ping operation
+  Future<void> _ping() async {
+    final host = _hostController.text.trim();
+    
+    // Skip if already pinging or no host entered
+    if (_isLoading || host.isEmpty) return;
 
     setState(() {
       _isLoading = true;
-      _whoisResult = null;
+      _pingResult = null;
     });
 
     try {
-      // Perform the WHOIS lookup
-      final result = await _whoisService.lookup(domain);
-
+      // Perform the ping operation
+      final result = await _pingService.pingHost(host, packetCount: _packetCount);
+      
       // Add to history
-      _addToHistory(domain, result);
-
+      _addToHistory(host, result);
+      
       // Update state
       setState(() {
-        _whoisResult = result;
+        _pingResult = result;
         _isLoading = false;
       });
     } catch (e) {
       setState(() {
-        _whoisResult = WhoisResult.error('Unexpected error: $e');
+        _pingResult = PingResult.error('Unexpected error: $e');
         _isLoading = false;
       });
     }
   }
-
-  /// Add a lookup operation to history
-  void _addToHistory(String domain, WhoisResult result) {
-    _lookupHistory.add({
-      'domain': domain,
+  
+  /// Add a ping operation to history
+  void _addToHistory(String host, PingResult result) {
+    _pingHistory.add({
+      'host': host,
       'timestamp': DateTime.now(),
       'result': result,
+      'packetCount': _packetCount,
     });
-
+    
     // Limit history to last 10 items
-    if (_lookupHistory.length > 10) {
-      _lookupHistory.removeAt(0);
+    if (_pingHistory.length > 10) {
+      _pingHistory.removeAt(0);
     }
   }
-
-  /// Show lookup history dialog
+  
+  /// Update the packet count
+  void _updatePacketCount(int count) {
+    setState(() {
+      _packetCount = count;
+    });
+  }
+  
+  /// Show ping history dialog
   void _showHistory() {
-    if (_lookupHistory.isEmpty) {
+    if (_pingHistory.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No WHOIS lookup history available')),
+        const SnackBar(content: Text('No ping history available')),
       );
       return;
     }
-
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('WHOIS Lookup History'),
+        title: const Text('Ping History'),
         content: SizedBox(
           width: double.maxFinite,
           child: ListView.builder(
             shrinkWrap: true,
-            itemCount: _lookupHistory.length,
+            itemCount: _pingHistory.length,
             itemBuilder: (context, index) {
-              final item = _lookupHistory[_lookupHistory.length - 1 - index];
-              final result = item['result'] as WhoisResult;
+              final item = _pingHistory[_pingHistory.length - 1 - index];
+              final result = item['result'] as PingResult;
               final timestamp = item['timestamp'] as DateTime;
-              final formattedTime =
-                  '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
-
+              final formattedTime = '${timestamp.hour}:${timestamp.minute.toString().padLeft(2, '0')}';
+              
               return ListTile(
-                title: Text(item['domain']),
-                subtitle: Text(
-                    '${result.isSuccess ? 'Success' : 'Failed'} • $formattedTime'),
+                title: Text(item['host']),
+                subtitle: Text('${result.isSuccess ? 'Success' : 'Failed'} • $formattedTime • ${item['packetCount']} packets'),
                 leading: Icon(
                   result.isSuccess ? Icons.check_circle : Icons.error,
                   color: result.isSuccess ? Colors.green : Colors.red,
                 ),
                 onTap: () {
-                  // Reuse this domain
-                  _domainController.text = item['domain'];
+                  // Reuse this host
+                  _hostController.text = item['host'];
                   Navigator.of(context).pop();
                 },
               );
@@ -143,7 +150,7 @@ class WhoisStatePage extends State<WhoisPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'WHOIS Lookup',
+                        'Ping Tool',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -151,7 +158,7 @@ class WhoisStatePage extends State<WhoisPage> {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Query domain registration information',
+                        'Test connectivity to a host by sending ICMP echo requests',
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.grey,
@@ -160,7 +167,7 @@ class WhoisStatePage extends State<WhoisPage> {
                     ],
                   ),
                 ),
-
+                
                 // History button
                 IconButton(
                   icon: const Icon(Icons.history),
@@ -170,19 +177,21 @@ class WhoisStatePage extends State<WhoisPage> {
               ],
             ),
             const SizedBox(height: 24),
-
-            // WHOIS lookup form
-            WhoisForm(
-              domainController: _domainController,
+            
+            // Ping form
+            PingForm(
+              hostController: _hostController,
               isLoading: _isLoading,
-              onLookup: _lookup,
+              onPing: _ping,
+              packetCount: _packetCount,
+              onPacketCountChanged: _updatePacketCount,
             ),
             const SizedBox(height: 16),
-
+            
             // Results
             Expanded(
-              child: WhoisResultView(
-                result: _whoisResult,
+              child: PingResultView(
+                result: _pingResult,
                 isLoading: _isLoading,
               ),
             ),
